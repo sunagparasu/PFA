@@ -6,6 +6,7 @@ import torch.backends.cudnn as cudnn
 from .dataset import ScribbleClassData
 import torch.nn.functional as F
 import random
+import numpy as np
 
 
 def data_loader(train, args):

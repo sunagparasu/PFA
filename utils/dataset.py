@@ -15,9 +15,9 @@ def load_image_label_list_from_npy(data_root, img_name_list, path='None'):
 
 
 class ScribbleData(Dataset):
-    def __init__(self, data_root=None, data_list=None, transform=None, path='ScribbleLabels'):
-        self.indices = open('{}/ImageSets/{}'.format(data_root, data_list), 'r').read().splitlines()
-        self.img_names = ['{}/JPEGImages/{}.jpg'.format(data_root, i) for i in self.indices]
+    def __init__(self, data_root=None, data_list=None, transform=None, path=None):
+        self.indices = open('{}'.format(data_root) + '/splits/' '{}'.format(data_list), 'r').read().splitlines()
+        self.img_names = ['{}/images/{}.jpg'.format(data_root, i) for i in self.indices]
         self.lab_names = ['{}/{}/{}.png'.format(data_root, path, i) for i in self.indices]
         self.transform = transform
 
@@ -30,7 +30,7 @@ class ScribbleData(Dataset):
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)  # BGR 3 channel ndarray wiht shape H * W * 3
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # convert cv2 read image from BGR order to RGB order
         image = np.float32(image)
-        label = Image.open(label_path)  # GRAY 1 channel ndarray with shape H * W
+        label = Image.open(label_path).convert("L")  # GRAY 1 channel ndarray with shape H * W
         label = np.array(label)
         if image.shape[0] != label.shape[0] or image.shape[1] != label.shape[1]:
             raise (RuntimeError("Image & label shape mismatch: " + image_path + " " + label_path + "\n"))
@@ -40,9 +40,9 @@ class ScribbleData(Dataset):
 
 
 class ScribbleClassData(ScribbleData):
-    def __init__(self, data_root=None, data_list=None, transform=None, path='ScribbleLabels'):
+    def __init__(self, data_root=None, data_list=None, transform=None, path=None):
         super().__init__(data_root=data_root, data_list=data_list, transform=transform, path=path)
-        self.label_list = load_image_label_list_from_npy(data_root, self.indices, path)
+        self.label_list = [np.array([1]) for _ in self.indices]  # List of 1s with length = number of images
 
     def __getitem__(self, index):
         image, mask_label, image_path = super().__getitem__(index)
